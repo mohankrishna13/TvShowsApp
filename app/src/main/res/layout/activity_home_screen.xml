@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <data>
+        <variable
+            name="viewModel"
+            type="com.mohankrishna.tvshowsapp.viewModels.HomeScreenViewModel" />
+
+    </data>
+
+    <LinearLayout
+        android:background="@color/title_featured"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        tools:context=".ui.Activities.HomeScreenActivity">
+            <androidx.cardview.widget.CardView
+                android:layout_width="match_parent"
+                app:cardCornerRadius="10dp"
+                android:background="@drawable/search_box_style"
+                android:layout_margin="7dp"
+                android:layout_height="wrap_content">
+                <SearchView
+                    android:id="@+id/searchView"
+                    android:layout_width="match_parent"
+                    android:layout_height="50dp"
+                    android:hint="Search"
+                    android:autoText="true"
+                    android:queryHint="Search Tv Shows"/>
+            </androidx.cardview.widget.CardView>
+        <FrameLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:visibility="visible"
+            android:id="@+id/fragment"/>
+        <FrameLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:visibility="visible"
+            android:id="@+id/fragment2"/>
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:id="@+id/recyclerView"/>
+    </LinearLayout>
+</layout>
