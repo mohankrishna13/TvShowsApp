@@ -15,3 +15,9 @@ How to use App:
 5.In Bottom of the screen Similar Tv Shows will be shown.
 
 6.User can click on the similar screen to view show and user can add it into favourite.
+
+
+Tools:
+Language : KOTLIN
+
+Tools & Libraries: Retrofit,Glide,Kotlin Koin, Room Database.
