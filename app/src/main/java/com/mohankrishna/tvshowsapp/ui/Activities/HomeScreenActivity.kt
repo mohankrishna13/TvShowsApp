@@ -22,11 +22,9 @@ class HomeScreenActivity : AppCompatActivity(){
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding= DataBindingUtil.setContentView(this,R.layout.activity_home_screen)
-        binding.viewModel=myViewModel
 
         if(!internetModeProvider.isNetworkConnected){
             Toast.makeText(this,"No Internet Connection", Toast.LENGTH_SHORT).show()
-
         }
 
         if (supportFragmentManager.findFragmentByTag("TrendingShowsFrag") == null) {
@@ -47,7 +45,6 @@ class HomeScreenActivity : AppCompatActivity(){
                 myViewModel.searchKey.value=query
                 return true
             }
-
             override fun onQueryTextChange(newText: String): Boolean {
                 myViewModel.searchKey.value=newText
                 binding.fragment.visibility= View.GONE
@@ -55,6 +52,6 @@ class HomeScreenActivity : AppCompatActivity(){
                 return false
             }
         })
-
     }
+
 }

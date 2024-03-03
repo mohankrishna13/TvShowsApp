@@ -1,7 +1,6 @@
 package com.mohankrishna.tvshowsapp.ui.Activities
 
 import android.os.Bundle
-import android.util.Log
 import android.view.View
 import androidx.appcompat.app.AppCompatActivity
 import androidx.databinding.DataBindingUtil
@@ -10,7 +9,6 @@ import com.bumptech.glide.Glide
 import com.mohankrishna.tvshowsapp.Adapters.PaginationAdapter
 import com.mohankrishna.tvshowsapp.ModelClass.Result
 import com.mohankrishna.tvshowsapp.R
-import com.mohankrishna.tvshowsapp.Repository.RoomRepository.RoomDatabaseHelper
 import com.mohankrishna.tvshowsapp.databinding.ActivityDetailsBinding
 import com.mohankrishna.tvshowsapp.utils.InternetModeProvider
 import com.mohankrishna.tvshowsapp.viewModels.DetailsScreenViewModel
@@ -25,8 +23,6 @@ class DetailsScreenActivity : AppCompatActivity() {
     val  myViewModel:DetailsScreenViewModel by viewModel()
     lateinit var recycleViewListAdapter: PaginationAdapter
     lateinit var binding: ActivityDetailsBinding
-
-    val roomDatabaseHelper:RoomDatabaseHelper by inject()
     val internetModeProvider:InternetModeProvider by inject()
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -44,9 +40,14 @@ class DetailsScreenActivity : AppCompatActivity() {
             LinearLayoutManager.HORIZONTAL,
             false
         )
-        binding.similarRecyclerView.adapter=recycleViewListAdapter
 
-        if(data?.isFavourite==null){
+        if (data != null) {
+            setNewDataToLocal(data)
+        }
+
+
+        binding.similarRecyclerView.adapter=recycleViewListAdapter
+        if(data?.is_favourite==null){
             binding.notFavourite.visibility=View.VISIBLE
             binding.favourite.visibility=View.GONE
         }else{
@@ -59,7 +60,7 @@ class DetailsScreenActivity : AppCompatActivity() {
                 binding.favourite.visibility=View.VISIBLE
 
                 var singleData=data
-                singleData?.isFavourite=true
+                singleData?.is_favourite=true
 
                 if (singleData != null) {
                     setFavouriteDataToLocal(singleData)
@@ -73,7 +74,7 @@ class DetailsScreenActivity : AppCompatActivity() {
                 binding.favourite.visibility=View.GONE
 
                 var singleData=data
-                singleData?.isFavourite=false
+                singleData?.is_favourite=false
 
                 if (singleData != null) {
                     setFavouriteDataToLocal(singleData)
@@ -95,11 +96,13 @@ class DetailsScreenActivity : AppCompatActivity() {
 
     }
 
+    private fun setNewDataToLocal(data: Result) {
+        myViewModel.insertData(data)
+    }
+
 
     private fun setFavouriteDataToLocal(daa:Result) {
-        CoroutineScope(Dispatchers.Main).launch{
-            myViewModel.setFavouriteFlag(daa)
-        }
+        myViewModel.setFavouriteFlag(daa)
     }
 
     private fun fetchDataByPagination() {

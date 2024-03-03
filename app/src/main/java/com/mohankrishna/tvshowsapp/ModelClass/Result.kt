@@ -33,6 +33,6 @@ data class Result(
     val vote_average: Double?,
     @ColumnInfo(name="vote_count")
     val vote_count: Int?,
-    @ColumnInfo(name="isFavourite")
-    var isFavourite: Boolean?
+    @ColumnInfo(name="is_favourite")
+    var is_favourite: Boolean?
 ):Serializable

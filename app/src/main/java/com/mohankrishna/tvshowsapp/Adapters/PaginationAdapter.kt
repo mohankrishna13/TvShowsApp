@@ -1,13 +1,10 @@
 package com.mohankrishna.tvshowsapp.Adapters
 
 import android.content.Intent
-import android.graphics.Color
-import android.provider.CalendarContract.Colors
-import android.util.Log
+
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.paging.PagingData
 import androidx.paging.PagingDataAdapter
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
@@ -17,8 +14,6 @@ import com.mohankrishna.tvshowsapp.ModelClass.Result
 import com.mohankrishna.tvshowsapp.MyApplication
 import com.mohankrishna.tvshowsapp.R
 import com.mohankrishna.tvshowsapp.databinding.HorizontalRecyclerviewBinding
-import com.mohankrishna.tvshowsapp.databinding.SingleCardViewLayoutBinding
-import kotlin.math.sin
 
 
 class PaginationAdapter: PagingDataAdapter<Result,PaginationAdapter.MyViewHolder>(differCallback) {

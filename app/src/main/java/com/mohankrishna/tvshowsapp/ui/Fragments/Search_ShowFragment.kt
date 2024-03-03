@@ -13,6 +13,7 @@ import com.mohankrishna.tvshowsapp.Adapters.SearchScreenAdapter
 import com.mohankrishna.tvshowsapp.R
 import com.mohankrishna.tvshowsapp.databinding.FragmentSearchShowBinding
 import com.mohankrishna.tvshowsapp.utils.DataFetchResults
+import com.mohankrishna.tvshowsapp.utils.DataFetchResultsOffline
 import com.mohankrishna.tvshowsapp.utils.InternetModeProvider
 import com.mohankrishna.tvshowsapp.viewModels.HomeScreenViewModel
 import org.koin.android.ext.android.inject
@@ -39,9 +40,7 @@ class Search_ShowFragment : Fragment() {
 
         createObserverForDataByName()
         createObserverForWeek()
-
         createObserverForOffline()
-        
 
         myViewModel.searchKey.observe(requireActivity(),Observer{
             if(internetModeProvider.isNetworkConnected){
@@ -54,13 +53,6 @@ class Search_ShowFragment : Fragment() {
                 myViewModel.offlineTvShowDataByName(it)
             }
         })
-
-
-    }
-
-    private fun showToastMessage(s: String) {
-        Toast.makeText(requireContext(),s,Toast.LENGTH_SHORT).show()
-
     }
 
     private fun createObserverForOffline() {
@@ -77,7 +69,6 @@ class Search_ShowFragment : Fragment() {
                     fragBinding.progressbarLayout.visibility=View.GONE
                 }
                 else -> {
-                    Toast.makeText(requireContext(),"Invokes",Toast.LENGTH_SHORT).show()
                     fragBinding.progressbarLayout.visibility=View.GONE
                 }
             }
@@ -99,7 +90,6 @@ class Search_ShowFragment : Fragment() {
                     fragBinding.progressbarLayout.visibility=View.GONE
                 }
                 else -> {
-                    Toast.makeText(requireContext(),"Invokes",Toast.LENGTH_SHORT).show()
                     fragBinding.progressbarLayout.visibility=View.GONE
                 }
             }
@@ -114,7 +104,6 @@ class Search_ShowFragment : Fragment() {
                     fragBinding.progressbarLayout.visibility=View.VISIBLE
                 }
                 is DataFetchResults.Success -> {
-                    recycleViewListAdapter.updateProductsList(result.data)
                     fragBinding.progressbarLayout.visibility=View.GONE
                 }
                 is DataFetchResults.Failure -> {
@@ -127,5 +116,4 @@ class Search_ShowFragment : Fragment() {
         })
 
     }
-
 }

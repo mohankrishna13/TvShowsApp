@@ -6,34 +6,31 @@ import androidx.lifecycle.viewModelScope
 import com.mohankrishna.tvshowsapp.BuildConfig
 import com.mohankrishna.tvshowsapp.ModelClass.Result
 import com.mohankrishna.tvshowsapp.ModelClass.TvShowsFromApiModel
+import com.mohankrishna.tvshowsapp.MyApplication
 import com.mohankrishna.tvshowsapp.Repository.RetrofitRepository.TvShowsApiInterface
-import com.mohankrishna.tvshowsapp.Repository.RoomRepository.RoomDatabaseHelper
 import com.mohankrishna.tvshowsapp.utils.DataFetchResults
+import com.mohankrishna.tvshowsapp.utils.DataFetchResultsOffline
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.catch
-import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.supervisorScope
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
 
-class HomeScreenViewModel(private var apiRepository: TvShowsApiInterface,
-                          private var databaseHelper: RoomDatabaseHelper):ViewModel(){
-    val getAllTrendingData = MutableLiveData<DataFetchResults>()
+class HomeScreenViewModel(private var apiRepository: TvShowsApiInterface):ViewModel(){
+    val getAllTrendingData = MutableLiveData<DataFetchResultsOffline>()
     val getDataByName = MutableLiveData<DataFetchResults>()
     val getDataForWeek = MutableLiveData<DataFetchResults>()
     val getDataInLocal = MutableLiveData<DataFetchResults>()
     val getDataForLocal = MutableLiveData<List<Result>>()
-
     val searchKey=MutableLiveData<String>()
     fun onlineTvShowTrendingData() {
         CoroutineScope(Dispatchers.IO).launch {
              try {
                  supervisorScope {
                      CoroutineScope(Dispatchers.Main).launch {
-                         getAllTrendingData.value = DataFetchResults.Loading()
+                         getAllTrendingData.value = DataFetchResultsOffline.Loading()
                      }
                     apiRepository.getTrendingShowsPerDay(BuildConfig.API_KEY)
                          .enqueue(object : Callback<TvShowsFromApiModel> {
@@ -41,18 +38,17 @@ class HomeScreenViewModel(private var apiRepository: TvShowsApiInterface,
                                  call: Call<TvShowsFromApiModel>,
                                  response: Response<TvShowsFromApiModel> ){
                                  if (response.isSuccessful) {
-                                    CoroutineScope(Dispatchers.Main).launch {
-                                        getAllTrendingData.value=DataFetchResults.Success(response.body()!!.results)
-                                        getDataForLocal.value=response.body()!!.results
-                                    }
-                                     //insertDataToOffline(response.body()!!.results)
+
+                                     response.body()?.let {
+                                         insertDataToOffline(it.results)
+                                     }
                                  } else {
-                                     getAllTrendingData.value=DataFetchResults.Error("Getting Error from server")
+                                     getAllTrendingData.value=DataFetchResultsOffline.Error("Getting Error from server")
                                  }
                              }
 
                              override fun onFailure(call: Call<TvShowsFromApiModel>, t: Throwable) {
-                                 getAllTrendingData.value=DataFetchResults.Failure(t)
+                                 getAllTrendingData.value=DataFetchResultsOffline.Failure(t)
                              }
                          })
                  }
@@ -110,7 +106,7 @@ class HomeScreenViewModel(private var apiRepository: TvShowsApiInterface,
                                 if (response.isSuccessful) {
                                     CoroutineScope(Dispatchers.Main).launch{
                                         getDataForWeek.value=DataFetchResults.Success(response.body()!!.results)
-                                        getDataForLocal.value=response.body()!!.results
+                                        insertDataToOffline(response.body()!!.results)
                                     }
                                 } else {
                                     getDataForWeek.value=DataFetchResults.Error("Getting Error from server")
@@ -129,49 +125,33 @@ class HomeScreenViewModel(private var apiRepository: TvShowsApiInterface,
 
     }
 
-
     fun offlineTvShowData() {
-        viewModelScope.launch {
-            databaseHelper.getOfflineTvShowsData()
-                .flowOn(Dispatchers.IO)
-                .catch { e ->
-                    CoroutineScope(Dispatchers.Main).launch{
-                        getDataInLocal.value=DataFetchResults.Failure(e)
-                    }
-                }
-                .collect {
-                    CoroutineScope(Dispatchers.Main).launch{
-                        getDataInLocal.value=DataFetchResults.Success(it)
-                    }
-                }
+        CoroutineScope(Dispatchers.IO).launch {
+            val userList: List<Result> = MyApplication.mydatabase.myRoomDao().getTvShows()
+            CoroutineScope(Dispatchers.Main).launch{
+                getDataInLocal.value=DataFetchResults.Success(userList)
+                getDataForLocal.value=userList
+            }
         }
     }
-     fun insertDataToOffline(results: List<Result>) {
+    fun insertDataToOffline(results: List<Result>) {
+          if(!results.isEmpty()){
+              CoroutineScope(Dispatchers.IO).launch {
+                  for(item in results){
+                      val newUser = item
+                      MyApplication.mydatabase.myRoomDao().insertTvShowsData(newUser)
+                  }
 
-         viewModelScope.launch(Dispatchers.IO) {
-             try {
-                 for(item in results) {
-                     databaseHelper.storeOfflineTvShowData(item)
-                 }
-             } catch (e: Exception) {
-                 e.printStackTrace()
-             }
-         }
+                  offlineTvShowData()
+              }
+          }
     }
     fun offlineTvShowDataByName(it: String?) {
-        viewModelScope.launch {
-            databaseHelper.getOfflineTvShowDataByName(it)
-                .flowOn(Dispatchers.IO)
-                .catch { e ->
-                    CoroutineScope(Dispatchers.Main).launch{
-                        getDataInLocal.value=DataFetchResults.Failure(e)
-                    }
-                }
-                .collect {
-                    CoroutineScope(Dispatchers.Main).launch {
-                        getDataInLocal.value=DataFetchResults.Success(it)
-                    }
-                }
+        CoroutineScope(Dispatchers.IO).launch {
+            val userList: List<Result> = MyApplication.mydatabase.myRoomDao().getDataByName(it)
+            CoroutineScope(Dispatchers.Main).launch{
+                getDataInLocal.value=DataFetchResults.Success(userList)
+            }
         }
     }
 }

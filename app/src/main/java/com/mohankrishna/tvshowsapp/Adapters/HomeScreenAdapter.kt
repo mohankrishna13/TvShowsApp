@@ -5,6 +5,7 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Toast
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.mohankrishna.tvshowsapp.ui.Activities.DetailsScreenActivity
@@ -43,6 +44,9 @@ class HomeScreenAdapter(var trendingTvShowsList:List<Result>):
         fun bind(item:Result){
             singleCardViewLayoutBinding.title.text=item.name
             val imageUrl = "http://image.tmdb.org/t/p/w500${item?.poster_path}"
+
+
+
             MyApplication.getContext()?.let {
                 Glide.with(it)
                     .load(imageUrl)
@@ -50,6 +54,15 @@ class HomeScreenAdapter(var trendingTvShowsList:List<Result>):
                     .error(R.drawable.error)
                     .into(singleCardViewLayoutBinding.imagePoster)
             }
+
+            if(item?.is_favourite==null){
+                singleCardViewLayoutBinding.notFavourite.visibility=View.VISIBLE
+                singleCardViewLayoutBinding.favourite.visibility=View.GONE
+            }else{
+                singleCardViewLayoutBinding.favourite.visibility=View.VISIBLE
+                singleCardViewLayoutBinding.notFavourite.visibility=View.GONE
+            }
+
             singleCardViewLayoutBinding.myCardView.setOnClickListener(object : View.OnClickListener {
                 override fun onClick(p0: View?) {
                     val intent = Intent(MyApplication.getContext(), DetailsScreenActivity::class.java)

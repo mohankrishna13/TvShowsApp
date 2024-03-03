@@ -12,8 +12,12 @@ import com.mohankrishna.tvshowsapp.Adapters.HomeScreenAdapter
 import com.mohankrishna.tvshowsapp.R
 import com.mohankrishna.tvshowsapp.databinding.FragmentTredingTvShowsBinding
 import com.mohankrishna.tvshowsapp.utils.DataFetchResults
+import com.mohankrishna.tvshowsapp.utils.DataFetchResultsOffline
 import com.mohankrishna.tvshowsapp.utils.InternetModeProvider
 import com.mohankrishna.tvshowsapp.viewModels.HomeScreenViewModel
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import org.koin.android.ext.android.inject
 import org.koin.androidx.viewmodel.ext.android.viewModel
 
@@ -50,12 +54,19 @@ class TrendingShowsFragment : Fragment() {
             myViewModel.offlineTvShowData()
         }
 
+
         myViewModel.getDataForLocal.observe(requireActivity(),Observer{
-            myViewModel.insertDataToOffline(it)
+            if(!it.isEmpty()){
+                recycleViewListAdapter.updateProductsList(it)
+            }
         })
 
     }
 
+    override fun onResume() {
+        super.onResume()
+        myViewModel.offlineTvShowData()
+    }
     private fun createObserverForTrendingDataOffline() {
         myViewModel.getDataInLocal.observe(requireActivity(), Observer { result ->
             when (result) {
@@ -63,7 +74,6 @@ class TrendingShowsFragment : Fragment() {
                     fragBinding.progressbarLayout.visibility=View.VISIBLE
                 }
                 is DataFetchResults.Success -> {
-                    recycleViewListAdapter.updateProductsList(result.data)
                     fragBinding.progressbarLayout.visibility=View.GONE
                 }
                 is DataFetchResults.Failure -> {
@@ -79,14 +89,14 @@ class TrendingShowsFragment : Fragment() {
     private fun createObserverForTrendingData() {
         myViewModel.getAllTrendingData.observe(requireActivity(), Observer { result ->
             when (result) {
-                is DataFetchResults.Loading -> {
+                is DataFetchResultsOffline.Loading -> {
                     fragBinding.progressbarLayout.visibility=View.VISIBLE
                 }
-                is DataFetchResults.Success -> {
-                    recycleViewListAdapter.updateProductsList(result.data)
+                is DataFetchResultsOffline.Success -> {
+                   // recycleViewListAdapter.updateProductsList(result.data)
                     fragBinding.progressbarLayout.visibility=View.GONE
                 }
-                is DataFetchResults.Failure -> {
+                is DataFetchResultsOffline.Failure -> {
                     fragBinding.progressbarLayout.visibility=View.GONE
                 }
                 else -> {

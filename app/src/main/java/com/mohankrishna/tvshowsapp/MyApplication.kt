@@ -2,11 +2,9 @@ package com.mohankrishna.tvshowsapp
 
 import android.app.Application
 import android.content.Context
+import androidx.room.Room
 import com.google.gson.GsonBuilder
-import com.mohankrishna.tvshowsapp.Repository.RoomRepository.DatabaseClient
-import com.mohankrishna.tvshowsapp.Repository.RoomRepository.RoomDatabaseHelper
-import com.mohankrishna.tvshowsapp.Repository.RoomRepository.DatabaseHelperImpl
-import com.mohankrishna.tvshowsapp.Repository.RoomRepository.TvServiceRoomDao
+import com.mohankrishna.tvshowsapp.Repository.RoomRepository.MyRoomDatabase
 import com.mohankrishna.tvshowsapp.utils.InternetModeProvider
 import com.mohankrishna.tvshowsapp.viewModels.DetailsScreenViewModel
 import com.mohankrishna.tvshowsapp.viewModels.HomeScreenViewModel
@@ -24,24 +22,36 @@ import com.mohankrishna.tvshowsapp.Repository.RetrofitRepository.TvShowsApiInter
 class MyApplication:Application() {
     companion object {
         private var instance: MyApplication? = null
+        lateinit var mydatabase: MyRoomDatabase
         fun getContext(): Context? {
             return instance
         }
     }
     override fun onCreate() {
         super.onCreate()
+
+        buildInstanceForRoom()
+
         instance = this
         startKoin {
             androidLogger()
             androidContext(this@MyApplication)
-            modules(listOf(retrofitModules,viewModelModules,appUtils,roomDatabase))
+            modules(listOf(retrofitModules,viewModelModules,appUtils))
         }
     }
 
-    val roomDatabase= module {
-        single { DatabaseClient.initialize(this@MyApplication)  }
-        single<RoomDatabaseHelper> { DatabaseHelperImpl(get()) }
+    private fun buildInstanceForRoom() {
+        mydatabase = Room.databaseBuilder(
+            applicationContext,
+            MyRoomDatabase::class.java,
+            "new_databse"
+        ).build()
     }
+
+    /* val roomDatabase= module {
+         single { DatabaseClient.initialize(get())  }
+         single<RoomDatabaseHelper> { DatabaseHelperImpl(get()) }
+     }*/
     val retrofitModules = module {
         single {
             var base_url=BuildConfig.BASE_URL
@@ -63,8 +73,8 @@ class MyApplication:Application() {
         }
     }
     val viewModelModules= module{
-        single { HomeScreenViewModel(get(),get())}
-        single { DetailsScreenViewModel(get(),get()) }
+        single { HomeScreenViewModel(get())}
+        single { DetailsScreenViewModel(get()) }
     }
 
     val appUtils= module {
