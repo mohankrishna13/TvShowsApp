@@ -93,7 +93,7 @@ class HomeScreenViewModel(private var apiRepository: TvShowsApiInterface):ViewMo
 
     }
     fun onlineTvShowDataForWeek() {
-        viewModelScope.launch {
+        CoroutineScope(Dispatchers.IO).launch {
             try {
                 supervisorScope {
                     CoroutineScope(Dispatchers.Main).launch {
@@ -142,8 +142,6 @@ class HomeScreenViewModel(private var apiRepository: TvShowsApiInterface):ViewMo
                       val newUser = item
                       MyApplication.mydatabase.myRoomDao().insertTvShowsData(newUser)
                   }
-
-                  offlineTvShowData()
               }
           }
     }

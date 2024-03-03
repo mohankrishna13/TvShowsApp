@@ -1,6 +1,7 @@
 package com.mohankrishna.tvshowsapp.ui.Fragments
 
 import android.os.Bundle
+import android.util.Log
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
@@ -61,16 +62,13 @@ class Search_ShowFragment : Fragment() {
                 is DataFetchResults.Loading -> {
                     fragBinding.progressbarLayout.visibility = View.VISIBLE
                 }
-
                 is DataFetchResults.Success -> {
                     recycleViewListAdapter.updateProductsList(result.data)
                     fragBinding.progressbarLayout.visibility=View.GONE
                 }
-
                 is DataFetchResults.Failure -> {
                     fragBinding.progressbarLayout.visibility = View.GONE
                 }
-
                 else -> {
                     fragBinding.progressbarLayout.visibility = View.GONE
                 }
@@ -105,6 +103,7 @@ class Search_ShowFragment : Fragment() {
                     fragBinding.progressbarLayout.visibility=View.VISIBLE
                 }
                 is DataFetchResults.Success -> {
+                    recycleViewListAdapter.updateProductsList(result.data)
                     fragBinding.progressbarLayout.visibility=View.GONE
                 }
                 is DataFetchResults.Failure -> {
