@@ -1,5 +1,6 @@
 package com.mohankrishna.tvshowsapp.viewModels
 
+import android.util.Log
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -20,9 +21,10 @@ import retrofit2.Response
 
 class HomeScreenViewModel(private var apiRepository: TvShowsApiInterface):ViewModel(){
     val getAllTrendingData = MutableLiveData<DataFetchResultsOffline>()
-    val getDataByName = MutableLiveData<DataFetchResults>()
+    val getDataByNameOnline = MutableLiveData<DataFetchResults>()
     val getDataForWeek = MutableLiveData<DataFetchResults>()
     val getDataInLocal = MutableLiveData<DataFetchResults>()
+    val getLocalDataSearchByName=MutableLiveData<DataFetchResults>()
     val getDataForLocal = MutableLiveData<List<Result>>()
     val searchKey=MutableLiveData<String>()
     fun onlineTvShowTrendingData() {
@@ -58,11 +60,11 @@ class HomeScreenViewModel(private var apiRepository: TvShowsApiInterface):ViewMo
          }
     }
     fun onlineTvShowDataByName(nameOfShow: String) {
-         viewModelScope.launch {
+        CoroutineScope(Dispatchers.IO).launch{
             try {
                 supervisorScope {
                     CoroutineScope(Dispatchers.Main).launch {
-                        getDataByName.value = DataFetchResults.Loading()
+                        getDataByNameOnline.value = DataFetchResults.Loading()
                     }
                     apiRepository.getTrendingShowsByName(BuildConfig.API_KEY,nameOfShow)
                         .enqueue(object : Callback<TvShowsFromApiModel> {
@@ -70,23 +72,22 @@ class HomeScreenViewModel(private var apiRepository: TvShowsApiInterface):ViewMo
                                 call: Call<TvShowsFromApiModel>,
                                 response: Response<TvShowsFromApiModel> ){
                                 if (response.isSuccessful) {
-                                    response.body()?.let {
                                         CoroutineScope(Dispatchers.Main).launch {
-                                            getDataByName.value=DataFetchResults.Success(it.results)
-                                        }
+                                            getDataByNameOnline.value=DataFetchResults.Success(response.body()!!.results)
                                     }
                                 } else {
-                                    getDataByName.value=DataFetchResults.Error("Getting Error from server")
+
+                                    getDataByNameOnline.value=DataFetchResults.Error("Getting Error from server")
                                 }
                             }
 
                             override fun onFailure(call: Call<TvShowsFromApiModel>, t: Throwable) {
-                                getDataByName.value=DataFetchResults.Failure(t)
+                                getDataByNameOnline.value=DataFetchResults.Failure(t)
                             }
                         })
                 }
             } catch (e: Exception) {
-                getDataByName.value=DataFetchResults.Failure(e)
+                getDataByNameOnline.value=DataFetchResults.Failure(e)
             }
         }
 
@@ -105,7 +106,7 @@ class HomeScreenViewModel(private var apiRepository: TvShowsApiInterface):ViewMo
                                 response: Response<TvShowsFromApiModel> ){
                                 if (response.isSuccessful) {
                                     CoroutineScope(Dispatchers.Main).launch{
-                                        getDataForWeek.value=DataFetchResults.Success(response.body()!!.results)
+                                       getDataForWeek.value=DataFetchResults.Success(response.body()!!.results)
                                         insertDataToOffline(response.body()!!.results)
                                     }
                                 } else {
@@ -150,7 +151,7 @@ class HomeScreenViewModel(private var apiRepository: TvShowsApiInterface):ViewMo
         CoroutineScope(Dispatchers.IO).launch {
             val userList: List<Result> = MyApplication.mydatabase.myRoomDao().getDataByName(it)
             CoroutineScope(Dispatchers.Main).launch{
-                getDataInLocal.value=DataFetchResults.Success(userList)
+                getLocalDataSearchByName.value=DataFetchResults.Success(userList)
             }
         }
     }
